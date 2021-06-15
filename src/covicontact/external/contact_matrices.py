@@ -1,9 +1,10 @@
 import argparse
 import yaml
-from pathlib import Path
+#from pathlib import Path
 import pandas as pd
 
-def _get_demographics_adjusted_to_contact_matrix_agebins(P_AGE, POPULATION_SIZE):
+
+def _get_demographics_adjusted_to_contact_matrix_agebins(p_age, population_size):
     """
     Given that we are aggregating data from various sources, it is required that we adjust for the underlying assumptions.
     One of these structural assumption is of age groups. Contact matrices available consider only 16 classes while we assume 17 classes.
@@ -18,49 +19,49 @@ def _get_demographics_adjusted_to_contact_matrix_agebins(P_AGE, POPULATION_SIZE)
         (list): each element is a list of 3 elements - min age in the group, max age in the group, number of people in this age group
             The list has a total of 16 elements (age groups) in this list.
     """
-    assert len(P_AGE) == 16, "Unknown age breakdown"
+    #assert len(p_age) == 16, "Unknown age breakdown"
     contact_matrix_age_bins = [[0,4], [5,9], [10,14], [15,19], [20,24], [25,29], [30,34], [35,39], [40,44], \
                                [45,49], [50,54], [55,59], [60,64], [65,69], [70,74], [75, 110]]
     N = []
-    for i, x in enumerate(P_AGE):
-        N += [[x[0], x[1], x[2] * POPULATION_SIZE]]
+    for i, x in enumerate(p_age):
+        N += [[x[0], x[1], x[2] * population_size]]
 
-    assert len(N) == len(contact_matrix_age_bins), "age bins of contact matrix do not align with internal age bins"
-    assert abs(sum(x[2] for x in N) - POPULATION_SIZE) < 1e-02, f"populations do not sum up, {sum(x[2] for x in N)} != {POPULATION_SIZE}"
+    #assert len(N) == len(contact_matrix_age_bins), "age bins of contact matrix do not align with internal age bins"
+    #assert abs(sum(x[2] for x in N) - POPULATION_SIZE) < 1e-02, f"populations do not sum up, {sum(x[2] for x in N)} != {POPULATION_SIZE}"
 
     return N
 
-if __name__ == "__main__":
+def main(country=None, region=None):
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--country", type=str, help="path to the country's yaml file", required=True)
-    parser.add_argument("--region", type=str, help="path to the region's yaml file", required=True)
-    parser.add_argument("--no_comments", action="store_true", default=False, help="do not write comments associated to computation procedure")
-    args = parser.parse_args()
+    #parser = argparse.ArgumentParser()
+    #parser.add_argument("--country", type=str, help="path to the country's yaml file", required=True)
+    #parser.add_argument("--region", type=str, help="path to the region's yaml file", required=True)
+    #parser.add_argument("--no_comments", action="store_true", default=False, help="do not write comments associated to computation procedure")
+    #args = parser.parse_args()
 
-    country_path = Path(args.country)
-    assert country_path.exists(), f"{country_path} does not exist"
+    #country_path = Path(args.country)
+    #assert country_path.exists(), f"{country_path} does not exist"
 
-    region_path = Path(args.region)
-    assert region_path.exists(), f"{region_path} does not exist"
+    #region_path = Path(args.region)
+    #assert region_path.exists(), f"{region_path} does not exist"
 
-    with country_path.open("r") as f:
-        country = yaml.safe_load(f)
+    #with country_path.open("r") as f:
+    #    country = yaml.safe_load(f)
 
-    with region_path.open("r") as f:
-        region = yaml.safe_load(f)
+    #with region_path.open("r") as f:
+    #    region = yaml.safe_load(f)
 
     # check for existence in region
     adjusted_matrix_keys = ["ADJUSTED_CONTACT_MATRIX_HOUSEHOLD", "ADJUSTED_CONTACT_MATRIX_WORKPLACE", "ADJUSTED_CONTACT_MATRIX_SCHOOL", "ADJUSTED_CONTACT_MATRIX_OTHER", "ADJUSTED_CONTACT_MATRIX_ALL"]
-    assert all(k not in region for k in adjusted_matrix_keys), "Adjusted matrices already exist. Delete it if you want to overwrite it."
+    #assert all(k not in region for k in adjusted_matrix_keys), "Adjusted matrices already exist. Delete it if you want to overwrite it."
 
     p_matrix_keys = ["P_CONTACT_MATRIX_HOUSEHOLD", "P_CONTACT_MATRIX_WORKPLACE", "P_CONTACT_MATRIX_SCHOOL", "P_CONTACT_MATRIX_OTHER", "P_CONTACT_MATRIX_ALL"]
-    assert all(k not in region for k in p_matrix_keys), "Adjusted matrices already exist. Delete it if you want to overwrite it."
+    #assert all(k not in region for k in p_matrix_keys), "Adjusted matrices already exist. Delete it if you want to overwrite it."
 
     # check for existence in country
     country_keys = ["COUNTRY_CONTACT_MATRIX_HOUSEHOLD", "COUNTRY_CONTACT_MATRIX_WORK", "COUNTRY_CONTACT_MATRIX_ALL", "COUNTRY_CONTACT_MATRIX_OTHER", "COUNTRY_CONTACT_MATRIX_SCHOOL"]
-    for key in country_keys:
-        assert key in country, f"{key} not found in the source file"
+    #for key in country_keys:
+    #    assert key in country, f"{key} not found in the source file"
 
     # source
     POPULATION_SIZE_COUNTRY = country["POPULATION_SIZE_COUNTRY"]
@@ -132,10 +133,12 @@ if __name__ == "__main__":
             P.iloc[:, j] = C.iloc[:, j] / C.iloc[:, j].sum()
 
         P_CONTACT_MATRICES[p_key] = P
-    assert all(abs(P.sum(axis=0) - 1) < 1e-2)
+
+    return ADJUSTED_CONTACT_MATRICES, P_CONTACT_MATRICES
+    #assert all(abs(P.sum(axis=0) - 1) < 1e-2)
 
     # write it to the yaml file
-    comment = """
+#    comment = """
 #######################################################################################
 ## projected and precomputed using utils/precompute_and_project/contact_matrices.py  ##
 #######################################################################################
@@ -148,57 +151,60 @@ if __name__ == "__main__":
 # ---- probability of contact between two age groups (procedure) ----
 # Resulting contact matrix is converted to likelihood via column normalization.
 # Thus, P_ij = probability of someone from age group j contacting someone in age group i
-    """
+#    """
 
-    with region_path.open("a") as f:
-        f.write(
-            "\n"
-            + (comment if not args.no_comments else "")
-            + "\n"
-        )
+#    with region_path.open("a") as f:
+#        f.write(
+#            "\n"
+#            + (comment if not args.no_comments else "")
+#            + "\n"
+#        )
 
-    comment = """
+#    comment = """
 ####### Adjusted contact matrices
-    """
-    with region_path.open("a") as f:
-        f.write(
-            "\n"
-            + (comment if not args.no_comments else "")
-            + "\n"
-        )
+#    """
+#    with region_path.open("a") as f:
+#        f.write(
+#            "\n"
+#            + (comment if not args.no_comments else "")
+#            + "\n"
+#        )
 
-    for key in adjusted_matrix_keys:
-        with region_path.open("a") as f:
-            f.write(
-                f"{key}: "
-                + "[\n{}\n]".format(",\n    ".join(map(str, ADJUSTED_CONTACT_MATRICES[key].values.tolist())))
-                + "\n\n"
-            )
+#    for key in adjusted_matrix_keys:
+#        with region_path.open("a") as f:
+#            f.write(
+#                f"{key}: "
+#                + "[\n{}\n]".format(",\n    ".join(map(str, ADJUSTED_CONTACT_MATRICES[key].values.tolist())))
+#                + "\n\n"
+#            )
 
-    comment = """
+#    comment = """
 ####### Probability of contact  matrices
-    """
-    with region_path.open("a") as f:
-        f.write(
-            "\n"
-            + (comment if not args.no_comments else "")
-            + "\n"
-        )
+#    """
+#    with region_path.open("a") as f:
+#        f.write(
+#            "\n"
+#            + (comment if not args.no_comments else "")
+#            + "\n"
+#        )
 
-    for key in p_matrix_keys:
-        with region_path.open("a") as f:
-            f.write(
-                f"{key}: "
-                + "[\n{}\n]".format(",\n    ".join(map(str, P_CONTACT_MATRICES[key].values.tolist())))
-                + "\n\n"
-            )
+#    for key in p_matrix_keys:
+#        with region_path.open("a") as f:
+#            f.write(
+#                f"{key}: "
+#                + "[\n{}\n]".format(",\n    ".join(map(str, P_CONTACT_MATRICES[key].values.tolist())))
+#                + "\n\n"
+#            )
 
     ########## 2: time duration matrices
-    comment = """
+#    comment = """
 # Following matrix is copied manually from "Using Time-Use Data to Parameterize Models for the Spread of Close-Contact Infectious Diseases"
 # ref: https://pubmed.ncbi.nlm.nih.gov/18801889/
 # the participants in the survey were from California, U.S. The survey itself several was conducted during the years 1988-2003.
 # We use these matrices as it is.
 # (assumption) duration of contacts are similar.
 # No correction is applied.
-    """
+#    """
+
+if __name__ == "__main__":
+    main()
