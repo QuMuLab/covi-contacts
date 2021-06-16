@@ -24,7 +24,7 @@ class TestContactMatrices(unittest.TestCase):
             'POPULATION_SIZE_REGION': 0,
         }
 
-        covicontact.main(country, region)
+        covicontact.mixing(country, region)
         self.assertEqual(True, True)
 
 
