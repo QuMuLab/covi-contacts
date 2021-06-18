@@ -4,7 +4,7 @@ This project packages-up a collection of utilities from the COVI-AgentSim projec
 
 ## Usage
 
-!pip install covi-contacts
+!pip install git+https://github.com/QuMuLab/covi-contacts
 
 ## Requirements
 
